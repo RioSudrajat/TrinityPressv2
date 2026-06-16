@@ -1,0 +1,165 @@
+"""
+File service — handles saving images to temp directories, size calculations,
+cleanup of expired sessions, and ZIP archive generation.
+"""
+import os
+import io
+import uuid
+import time
+import shutil
+import zipfile
+import threading
+from PIL import Image
+
+from config import UPLOAD_FOLDER, SESSION_MAX_AGE, SESSION_CLEANUP_INTERVAL
+
+
+# In-memory session registry: session_id -> {"path": str, "created_at": float}
+_sessions: dict[str, dict] = {}
+_sessions_lock = threading.Lock()
+
+
+def create_session() -> str:
+    """Create a new session with a unique ID and temp directory."""
+    session_id = str(uuid.uuid4())
+    session_path = os.path.join(UPLOAD_FOLDER, session_id)
+    os.makedirs(session_path, exist_ok=True)
+
+    with _sessions_lock:
+        _sessions[session_id] = {
+            "path": session_path,
+            "created_at": time.time(),
+        }
+
+    return session_id
+
+
+def get_session_path(session_id: str) -> str | None:
+    """Get the filesystem path for a session, or None if it doesn't exist."""
+    with _sessions_lock:
+        session = _sessions.get(session_id)
+        if session and os.path.isdir(session["path"]):
+            return session["path"]
+    return None
+
+
+def save_original(session_id: str, image: Image.Image, original_filename: str) -> str:
+    """
+    Save the original image as PNG in the session directory.
+    Returns the filesystem path of the saved file.
+    """
+    session_path = get_session_path(session_id)
+    if not session_path:
+        raise ValueError(f"Session {session_id} not found")
+
+    filepath = os.path.join(session_path, "original.png")
+    image.save(filepath, "PNG")
+    return filepath
+
+
+def save_compressed(
+    session_id: str,
+    algorithm_name: str,
+    image: Image.Image
+) -> str:
+
+    session_path = get_session_path(session_id)
+
+    if not session_path:
+        raise ValueError(f"Session {session_id} not found")
+
+    if algorithm_name == "jpeg_quality":
+
+        filepath = os.path.join(
+            session_path,
+            f"{algorithm_name}.jpg"
+        )
+
+        image.save(
+            filepath,
+            "JPEG",
+            quality=30,
+            optimize=True
+        )
+
+    else:
+
+        filepath = os.path.join(
+            session_path,
+            f"{algorithm_name}.png"
+        )
+
+        image.save(filepath, "PNG")
+
+    return filepath
+
+
+def get_file_path(session_id: str, filename: str) -> str | None:
+    """Get the full path for a file in a session directory."""
+    session_path = get_session_path(session_id)
+    if not session_path:
+        return None
+
+    filepath = os.path.join(session_path, filename)
+    if os.path.isfile(filepath):
+        return filepath
+    return None
+
+
+def get_file_size(filepath: str) -> int:
+    """Get file size in bytes."""
+    return os.path.getsize(filepath)
+
+
+def create_zip(session_id: str, original_filename: str) -> io.BytesIO:
+    """
+    Create a ZIP archive containing all compressed PNG files in the session.
+    Returns a BytesIO buffer containing the ZIP.
+    """
+    session_path = get_session_path(session_id)
+    if not session_path:
+        raise ValueError(f"Session {session_id} not found")
+
+    name_base = os.path.splitext(original_filename)[0]
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
+        for filename in os.listdir(session_path):
+            if filename.endswith(".png") and filename != "original.png":
+                filepath = os.path.join(session_path, filename)
+                algo_name = filename.replace(".png", "")
+                archive_name = f"{name_base}_{algo_name}.png"
+                zf.write(filepath, archive_name)
+
+    zip_buffer.seek(0)
+    return zip_buffer
+
+
+def cleanup_expired_sessions():
+    """Remove sessions older than SESSION_MAX_AGE."""
+    now = time.time()
+    expired = []
+
+    with _sessions_lock:
+        for sid, info in _sessions.items():
+            if now - info["created_at"] > SESSION_MAX_AGE:
+                expired.append(sid)
+
+        for sid in expired:
+            info = _sessions.pop(sid, None)
+            if info and os.path.isdir(info["path"]):
+                try:
+                    shutil.rmtree(info["path"])
+                except OSError:
+                    pass  # Best-effort cleanup
+
+
+def start_cleanup_scheduler():
+    """Start a background thread that periodically cleans up expired sessions."""
+    def _run():
+        while True:
+            time.sleep(SESSION_CLEANUP_INTERVAL)
+            cleanup_expired_sessions()
+
+    thread = threading.Thread(target=_run, daemon=True)
+    thread.start()
