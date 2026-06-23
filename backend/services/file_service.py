@@ -43,17 +43,22 @@ def get_session_path(session_id: str) -> str | None:
     return None
 
 
-def save_original(session_id: str, image: Image.Image, original_filename: str) -> str:
+def save_original(session_id: str, file_data: bytes, original_filename: str) -> str:
     """
-    Save the original image as PNG in the session directory.
+    Save the original raw file data with its original extension in the session directory.
     Returns the filesystem path of the saved file.
     """
     session_path = get_session_path(session_id)
     if not session_path:
         raise ValueError(f"Session {session_id} not found")
 
-    filepath = os.path.join(session_path, "original.png")
-    image.save(filepath, "PNG")
+    _, ext = os.path.splitext(original_filename)
+    if not ext:
+        ext = ".png"
+
+    filepath = os.path.join(session_path, f"original{ext.lower()}")
+    with open(filepath, "wb") as f:
+        f.write(file_data)
     return filepath
 
 
@@ -68,28 +73,12 @@ def save_compressed(
     if not session_path:
         raise ValueError(f"Session {session_id} not found")
 
-    if algorithm_name == "jpeg_quality":
+    filepath = os.path.join(
+        session_path,
+        f"{algorithm_name}.png"
+    )
 
-        filepath = os.path.join(
-            session_path,
-            f"{algorithm_name}.jpg"
-        )
-
-        image.save(
-            filepath,
-            "JPEG",
-            quality=30,
-            optimize=True
-        )
-
-    else:
-
-        filepath = os.path.join(
-            session_path,
-            f"{algorithm_name}.png"
-        )
-
-        image.save(filepath, "PNG")
+    image.save(filepath, "PNG")
 
     return filepath
 
@@ -113,7 +102,7 @@ def get_file_size(filepath: str) -> int:
 
 def create_zip(session_id: str, original_filename: str) -> io.BytesIO:
     """
-    Create a ZIP archive containing all compressed PNG files in the session.
+    Create a ZIP archive containing all compressed files in the session.
     Returns a BytesIO buffer containing the ZIP.
     """
     session_path = get_session_path(session_id)
@@ -121,14 +110,15 @@ def create_zip(session_id: str, original_filename: str) -> io.BytesIO:
         raise ValueError(f"Session {session_id} not found")
 
     name_base = os.path.splitext(original_filename)[0]
+    allowed_algo_files = ["nearest_neighbor.png", "jpeg_quality.png", "svd.png"]
 
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-        for filename in os.listdir(session_path):
-            if filename.endswith(".png") and filename != "original.png":
-                filepath = os.path.join(session_path, filename)
-                algo_name = filename.replace(".png", "")
-                archive_name = f"{name_base}_{algo_name}.png"
+        for filename in allowed_algo_files:
+            filepath = os.path.join(session_path, filename)
+            if os.path.isfile(filepath):
+                name_part, ext = os.path.splitext(filename)
+                archive_name = f"{name_base}_{name_part}{ext}"
                 zf.write(filepath, archive_name)
 
     zip_buffer.seek(0)

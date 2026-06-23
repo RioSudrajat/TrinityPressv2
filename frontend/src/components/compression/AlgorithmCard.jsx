@@ -6,9 +6,11 @@ export default function AlgorithmCard({
   algorithm,
   label,
   size,
+  pureSize,
   width,
   height,
   reductionPercent,
+  pureReductionPercent,
   durationMs,
   imageUrl,
   onZoom,
@@ -19,18 +21,15 @@ export default function AlgorithmCard({
   let badgeColor = "bg-accentPrimary/20 text-accentPrimary border-accentPrimary/30";
   let glowClass = "nn-glow";
 
-  if (algorithm === "chroma_subsampling") {
-    accentColor = "accent-strip-chroma shadow-md";
+  if (algorithm === "jpeg_quality") {
+    accentColor = "accent-strip-jpeg shadow-md";
     badgeColor = "bg-accentSecondary/20 text-accentSecondary border-accentSecondary/30";
-    glowClass = "chroma-glow";
+    glowClass = "jpeg-glow";
   } else if (algorithm === "svd") {
     accentColor = "accent-strip-svd shadow-md";
     badgeColor = "bg-accentTertiary/20 text-accentTertiary border-accentTertiary/30";
     glowClass = "svd-glow";
   }
-
-  const isReduced = reductionPercent > 0;
-  const isIncreased = reductionPercent < 0;
 
   return (
     <div 
@@ -45,7 +44,7 @@ export default function AlgorithmCard({
             {label}
           </span>
           <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${badgeColor}`}>
-            {algorithm === "nearest_neighbor" ? "NN" : algorithm === "chroma_subsampling" ? "CHROMA" : "SVD"}
+            {algorithm === "nearest_neighbor" ? "NN" : algorithm === "jpeg_quality" ? "JPEG" : "SVD"}
           </span>
         </div>
 
@@ -56,6 +55,7 @@ export default function AlgorithmCard({
               src={imageUrl}
               alt={label}
               className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+              style={algorithm === "nearest_neighbor" ? { imageRendering: "pixelated" } : {}}
             />
           ) : (
             <div className="flex flex-col items-center justify-center p-4">
@@ -75,18 +75,43 @@ export default function AlgorithmCard({
         {/* Meta Info */}
         <div className="p-4 flex flex-col justify-between flex-grow">
           <div className="space-y-1 mb-4">
-            <div className="flex items-center justify-between text-xs text-textSec font-mono">
-              <span>Ukuran:</span>
+            {/* Pure / Native Compression */}
+            <div className="flex items-center justify-between text-[11px] text-textSec font-mono">
+              <span className="font-semibold text-textLabel">Ukuran Murni:</span>
+              <span className="text-textMain font-semibold">{formatBytes(pureSize)}</span>
+            </div>
+            
+            <div className="flex items-center justify-between text-[11px] text-textSec font-mono">
+              <span className="font-semibold text-textLabel">Efisiensi Murni:</span>
+              <span 
+                className={`font-bold ${
+                  pureReductionPercent > 0 
+                    ? "text-accentTertiary" 
+                    : pureReductionPercent < 0 
+                      ? "text-error" 
+                      : "text-textSec"
+                }`}
+              >
+                {formatPercentage(pureReductionPercent)}
+              </span>
+            </div>
+
+            {/* Separator line */}
+            <div className="border-t border-borderHalus/40 my-2" />
+
+            {/* PNG Container size */}
+            <div className="flex items-center justify-between text-[11px] text-textSec font-mono">
+              <span className="font-semibold text-textLabel">Ukuran PNG:</span>
               <span className="text-textMain font-semibold">{formatBytes(size)}</span>
             </div>
             
-            <div className="flex items-center justify-between text-xs text-textSec font-mono">
-              <span>Efisiensi:</span>
+            <div className="flex items-center justify-between text-[11px] text-textSec font-mono">
+              <span className="font-semibold text-textLabel">Efisiensi PNG:</span>
               <span 
-                className={`font-bold font-mono ${
-                  isReduced 
+                className={`font-bold ${
+                  reductionPercent > 0 
                     ? "text-accentTertiary" 
-                    : isIncreased 
+                    : reductionPercent < 0 
                       ? "text-error" 
                       : "text-textSec"
                 }`}
@@ -94,6 +119,9 @@ export default function AlgorithmCard({
                 {formatPercentage(reductionPercent)}
               </span>
             </div>
+
+            {/* Separator line */}
+            <div className="border-t border-borderHalus/40 my-2" />
 
             <div className="flex items-center justify-between text-xs text-textSec font-mono">
               <span>Resolusi:</span>
@@ -112,7 +140,7 @@ export default function AlgorithmCard({
               e.stopPropagation(); // Avoid triggering zoom
               onDownload();
             }}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-md bg-surfaceElevated hover:bg-borderHalus text-xs font-semibold border border-borderHalus text-textMain hover:text-white transition-all shadow-sm"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-md bg-surfaceElevated hover:bg-borderHalus text-xs font-semibold border border-borderHalus text-textMain transition-all shadow-sm"
           >
             <Download size={12} />
             <span>Unduh PNG</span>

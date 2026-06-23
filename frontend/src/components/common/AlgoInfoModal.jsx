@@ -55,13 +55,13 @@ export default function AlgoInfoModal({ isOpen, onClose }) {
           <div className="space-y-2 border-l-4 border-l-accentSecondary pl-4">
             <h4 className="font-display font-bold text-textMain text-base flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-accentSecondary" />
-              Chroma Subsampling (YUV 4:2:0)
+              JPEG Quality (Q=30)
             </h4>
             <p>
-              <strong>Konsep:</strong> Mata manusia lebih peka terhadap perbedaan kecerahan (luminance) daripada perbedaan warna (chrominance). Algoritma ini mengonversi warna RGB ke ruang warna YCbCr, lalu mengurangi resolusi informasi warna (Cb dan Cr) menjadi setengahnya secara horizontal dan vertikal.
+              <strong>Konsep:</strong> Menggunakan kompresi standar JPEG dengan tingkat kualitas rendah (Q=30). Algoritma ini mengubah gambar ke domain frekuensi menggunakan Discrete Cosine Transform (DCT) dan melakukan kuantisasi untuk membuang komponen frekuensi tinggi yang kurang sensitif bagi mata manusia.
             </p>
             <p className="text-xs">
-              <strong>Efek Visual:</strong> Gambar terlihat hampir identik dengan aslinya karena detail kecerahan (Y) dipertahankan sepenuhnya, sedangkan penurunan resolusi warna tersamarkan dengan baik.
+              <strong>Efek Visual:</strong> Terlihat artefak kompresi berupa kotak-kotak halus (blocking) dan derau di sekitar tepi objek yang kontras (mosquito noise), namun ukuran file menjadi sangat kecil dan efisien.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export default function AlgoInfoModal({ isOpen, onClose }) {
                   <tr className="bg-surface/60 border-b border-borderHalus/60 font-mono text-textSec">
                     <th className="p-2.5">Aspek</th>
                     <th className="p-2.5">Nearest-Neighbor</th>
-                    <th className="p-2.5">Chroma Subsampling</th>
+                    <th className="p-2.5">JPEG Quality (Q=30)</th>
                     <th className="p-2.5">SVD</th>
                   </tr>
                 </thead>
@@ -98,19 +98,19 @@ export default function AlgoInfoModal({ isOpen, onClose }) {
                   <tr>
                     <td className="p-2.5 font-bold text-textMain">Metodologi</td>
                     <td className="p-2.5">Spatial Resampling</td>
-                    <td className="p-2.5">Color Space Reduction</td>
+                    <td className="p-2.5">Frequency Domain (DCT)</td>
                     <td className="p-2.5">Matrix Factorization</td>
                   </tr>
                   <tr>
                     <td className="p-2.5 font-bold text-textMain">Visual</td>
                     <td className="p-2.5 text-accentPrimary">Piksel/Kotak</td>
-                    <td className="p-2.5 text-accentSecondary">Mirip Aslinya</td>
+                    <td className="p-2.5 text-accentSecondary">Artefak Blok/Noise</td>
                     <td className="p-2.5 text-accentTertiary">Blur/Halus</td>
                   </tr>
                   <tr>
                     <td className="p-2.5 font-bold text-textMain">Matematika</td>
                     <td className="p-2.5">Sampling Theory</td>
-                    <td className="p-2.5">Human Perception</td>
+                    <td className="p-2.5">DCT & Quantization</td>
                     <td className="p-2.5">Linear Algebra (SVD)</td>
                   </tr>
                 </tbody>

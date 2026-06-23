@@ -11,23 +11,25 @@ class JPEGQualityCompressor:
         self.quality = quality
 
     def compress(self, image, **kwargs):
-
+        quality = kwargs.get("quality", self.quality)
         buffer = io.BytesIO()
 
         image.save(
             buffer,
             format="JPEG",
-            quality=self.quality,
+            quality=quality,
             optimize=True
         )
 
+        pure_size = len(buffer.getvalue())
         buffer.seek(0)
 
         compressed = Image.open(buffer).convert("RGB")
 
-        return compressed
+        return compressed, pure_size
 
     def get_params_used(self, **kwargs):
+        quality = kwargs.get("quality", self.quality)
         return {
-            "quality": self.quality
+            "quality": quality
         }

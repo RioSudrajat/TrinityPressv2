@@ -29,7 +29,7 @@ def test_health():
     data = r.json()
     assert data["status"] == "ok"
     assert "version" in data
-    print(f"  ✓ Health OK: {data}")
+    print(f"  [OK] Health OK: {data}")
 
 
 def test_compress():
@@ -43,7 +43,7 @@ def test_compress():
     
     # Upload
     files = {"file": ("test_gradient.png", buf, "image/png")}
-    data = {"scale_factor": "0.5", "svd_rank": "30"}
+    data = {"scale_factor": "0.5", "jpeg_quality": "30", "svd_rank": "30"}
     
     r = requests.post(f"{BASE_URL}/compress", files=files, data=data)
     assert r.status_code == 200, f"Expected 200, got {r.status_code}: {r.text}"
@@ -60,10 +60,10 @@ def test_compress():
     orig = result["original"]
     
     print(f"  Session: {session_id}")
-    print(f"  Original: {orig['filename']} — {orig['size_human']} ({orig['width']}×{orig['height']})")
+    print(f"  Original: {orig['filename']} - {orig['size_human']} ({orig['width']}x{orig['height']})")
     
     # Validate each algorithm result
-    expected_algos = {"nearest_neighbor", "chroma_subsampling", "svd"}
+    expected_algos = {"nearest_neighbor", "jpeg_quality", "svd"}
     found_algos = set()
     
     for res in result["results"]:
@@ -79,10 +79,10 @@ def test_compress():
         assert "url" in res
         assert "params" in res
         
-        print(f"  {res['label']}: {res['size_human']} (↓{res['reduction_percent']}%) — {res['duration_ms']}ms")
+        print(f"  {res['label']}: {res['size_human']} (-{res['reduction_percent']}%) - {res['duration_ms']}ms")
     
     assert found_algos == expected_algos, f"Missing algorithms: {expected_algos - found_algos}"
-    print("  ✓ All 3 algorithms returned valid results")
+    print("  [OK] All 3 algorithms returned valid results")
     
     return result
 
@@ -99,7 +99,7 @@ def test_download(result):
     # Verify it's a valid PNG
     img = Image.open(io.BytesIO(r.content))
     assert img.format == "PNG"
-    print(f"  ✓ Original downloaded: {len(r.content)} bytes, {img.size}")
+    print(f"  [OK] Original downloaded: {len(r.content)} bytes, {img.size}")
     
     # Download each compressed image
     for res in result["results"]:
@@ -107,15 +107,16 @@ def test_download(result):
         r = requests.get(url)
         assert r.status_code == 200, f"{res['algorithm']} download failed: {r.status_code}"
         img = Image.open(io.BytesIO(r.content))
-        assert img.format == "PNG"
-        print(f"  ✓ {res['algorithm']}: {len(r.content)} bytes, {img.size}")
+        expected_format = "PNG"
+        assert img.format == expected_format, f"Expected {expected_format}, got {img.format}"
+        print(f"  [OK] {res['algorithm']}: {len(r.content)} bytes, {img.size} ({img.format})")
     
     # Download ZIP
     zip_url = f"http://localhost:5000/api/download/{session_id}/all.zip"
     r = requests.get(zip_url)
     assert r.status_code == 200, f"ZIP download failed: {r.status_code}"
     assert "zip" in r.headers["Content-Type"].lower() or len(r.content) > 100
-    print(f"  ✓ ZIP downloaded: {len(r.content)} bytes")
+    print(f"  [OK] ZIP downloaded: {len(r.content)} bytes")
 
 
 def test_validation_errors():
@@ -124,13 +125,13 @@ def test_validation_errors():
     # Test: No file
     r = requests.post(f"{BASE_URL}/compress")
     assert r.status_code == 400
-    print(f"  ✓ No file → 400: {r.json()['message']}")
+    print(f"  [OK] No file -> 400: {r.json()['message']}")
     
     # Test: Invalid file type
     files = {"file": ("test.txt", b"This is not an image", "text/plain")}
     r = requests.post(f"{BASE_URL}/compress", files=files)
     assert r.status_code == 400
-    print(f"  ✓ Invalid type → 400: {r.json()['message']}")
+    print(f"  [OK] Invalid type -> 400: {r.json()['message']}")
 
 
 if __name__ == "__main__":
@@ -144,5 +145,5 @@ if __name__ == "__main__":
     test_validation_errors()
     
     print("\n" + "=" * 60)
-    print("  ALL TESTS PASSED ✓")
+    print("  ALL TESTS PASSED [OK]")
     print("=" * 60)

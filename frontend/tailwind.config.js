@@ -7,29 +7,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#0F1117",
-        surface: "#1C1F2A",
-        surfaceElevated: "#252836",
-        borderHalus: "#2E3347",
-        accentPrimary: "#5B8CFF",    // Nearest-Neighbor (Blue)
-        accentSecondary: "#A78BFA",  // Chroma Subsampling (Lavender)
-        accentTertiary: "#34D399",   // SVD (Mint)
-        textMain: "#F0F2FF",
-        textSec: "#8B90A8",
-        textLabel: "#5A6070",
-        error: "#F87171",
-        warning: "#FBBF24",
+        background: "#F3F3F3",
+        surface: "#FFFFFF",
+        surfaceElevated: "#E5E5E5",
+        borderHalus: "#D4D4D4",
+        brandPrimary: "#ABF600",
+        brandSecondary: "#F2FED1",
+        accentPrimary: "#2563EB",    // Nearest-Neighbor (Royal Blue)
+        accentSecondary: "#7C3AED",  // JPEG Quality (Violet)
+        accentTertiary: "#059669",   // SVD (Emerald)
+        textMain: "#111111",
+        textSec: "#404040",
+        textLabel: "#737373",
+        error: "#EF4444",
+        warning: "#F59E0B",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
-        display: ["Space Grotesk", "sans-serif"],
+        sans: ["Karla", "sans-serif"],
+        display: ["Karla", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       borderRadius: {
-        sm: "4px",
-        md: "8px",
-        lg: "12px",
-        xl: "16px",
+        sm: "12px",
+        md: "20px",
+        lg: "24px",
+        xl: "32px",
       },
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

@@ -20,7 +20,7 @@ class SVDCompressor(BaseCompressor):
     def label(self) -> str:
         return "SVD Decomposition"
 
-    def compress(self, image: Image.Image, **kwargs) -> Image.Image:
+    def compress(self, image: Image.Image, **kwargs) -> tuple[Image.Image, int]:
         rank: int = kwargs.get("rank", 50)
 
         # Clamp to valid range
@@ -40,7 +40,13 @@ class SVDCompressor(BaseCompressor):
             channels.append(compressed)
 
         result_array = np.stack(channels, axis=2).astype(np.uint8)
-        return Image.fromarray(result_array)
+        reconstructed = Image.fromarray(result_array)
+
+        # Calculate pure size (decomposed matrix factors size: 3 channels * rank * (H + W + 1))
+        h, w = image.size[1], image.size[0]
+        pure_size = 3 * rank * (h + w + 1)
+
+        return reconstructed, pure_size
 
     def get_params_used(self, **kwargs) -> dict:
         rank = kwargs.get("rank", 50)

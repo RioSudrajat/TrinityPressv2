@@ -1,66 +1,75 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #0F1117;
-  --color-surface: #1C1F2A;
-  --color-surfaceElevated: #252836;
-  --color-borderHalus: #2E3347;
-  --color-accentPrimary: #5B8CFF;    /* Nearest-Neighbor (Blue) */
-  --color-accentSecondary: #A78BFA;  /* Chroma Subsampling (Lavender) */
-  --color-accentTertiary: #34D399;   /* SVD (Mint) */
-  --color-textMain: #F0F2FF;
-  --color-textSec: #8B90A8;
-  --color-textLabel: #5A6070;
-  --color-error: #F87171;
-  --color-warning: #FBBF24;
+  --color-background: #F3F3F3;         /* light gray background */
+  --color-surface: #FFFFFF;            /* white card surface */
+  --color-surfaceElevated: #E5E5E5;    /* slightly darker for hover / elevated */
+  --color-borderHalus: #D4D4D4;        /* light border line */
+  
+  /* Brand colors from Design-System.md */
+  --color-brandPrimary: #ABF600;       /* Lime green */
+  --color-brandSecondary: #F2FED1;     /* Tint green */
+  
+  /* Text colors */
+  --color-textMain: #111111;           /* Ink Black */
+  --color-textSec: #404040;            /* Charcoal Gray */
+  --color-textLabel: #737373;          /* Medium Gray for metadata */
+  
+  /* Algorithm accent colors */
+  --color-accentPrimary: #2563EB;      /* Nearest-Neighbor (Royal Blue) */
+  --color-accentSecondary: #7C3AED;    /* JPEG Quality (Violet) */
+  --color-accentTertiary: #059669;     /* SVD (Emerald) */
 
-  --font-sans: "Inter", sans-serif;
-  --font-display: "Space Grotesk", sans-serif;
+  --color-error: #EF4444;              /* Red */
+  --color-warning: #F59E0B;            /* Amber */
+
+  --font-sans: "Karla", sans-serif;
+  --font-display: "Karla", sans-serif; /* Karla is used for display as well */
   --font-mono: "JetBrains Mono", monospace;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 12px;                   /* from Design-System.md */
+  --radius-md: 20px;                   /* from Design-System.md --radius-card */
+  --radius-lg: 24px;
+  --radius-xl: 32px;
 }
 
 @utility glass-panel {
-  background: rgba(28, 31, 42, 0.6);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(46, 51, 71, 0.5);
+  border: 1px solid rgba(212, 212, 212, 0.4);
 }
 
 @utility glass-panel-elevated {
-  background: rgba(37, 40, 54, 0.75);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(90, 96, 112, 0.4);
+  border: 1px solid rgba(115, 115, 115, 0.3);
 }
 
 @utility glass-input {
-  background: rgba(15, 17, 23, 0.5);
-  border: 1px solid rgba(46, 51, 71, 0.8);
-  color: #F0F2FF;
+  background: rgba(243, 243, 243, 0.8);
+  border: 1px solid rgba(212, 212, 212, 0.8);
+  color: #111111;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @utility nn-glow {
-  box-shadow: 0 0 25px -5px rgba(91, 140, 255, 0.15);
+  box-shadow: 0 0 25px -5px rgba(37, 99, 235, 0.15);
 }
 
-@utility chroma-glow {
-  box-shadow: 0 0 25px -5px rgba(167, 139, 250, 0.15);
+@utility jpeg-glow {
+  box-shadow: 0 0 25px -5px rgba(124, 58, 237, 0.15);
 }
 
 @utility svd-glow {
-  box-shadow: 0 0 25px -5px rgba(52, 211, 153, 0.15);
+  box-shadow: 0 0 25px -5px rgba(5, 150, 105, 0.15);
 }
 
 body {
-  background-color: #0F1117;
-  color: #F0F2FF;
-  font-family: "Inter", sans-serif;
+  background-color: #F3F3F3;
+  color: #111111;
+  font-family: "Karla", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -71,22 +80,22 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 17, 23, 0.5);
+  background: rgba(243, 243, 243, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(46, 51, 71, 0.8);
+  background: rgba(212, 212, 212, 0.8);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(91, 140, 255, 0.6);
+  background: rgba(37, 99, 235, 0.6);
 }
 
 /* Custom animated grids/effects */
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(46, 51, 71, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(46, 51, 71, 0.1) 1px, transparent 1px);
+    linear-gradient(to right, rgba(17, 17, 17, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(17, 17, 17, 0.03) 1px, transparent 1px);
 }

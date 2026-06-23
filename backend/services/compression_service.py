@@ -19,24 +19,27 @@ _jpeg_compressor = JPEGQualityCompressor(quality=30)
 _svd_compressor = SVDCompressor()
 
 
-def _run_single_compression(compressor, image, session_id, **kwargs):
+def _run_single_compression(compressor, image, session_id, original_size, **kwargs):
     """
     Run a single compressor: compress, save, measure, and return result dict.
     """
     start = time.perf_counter()
-    compressed_image = compressor.compress(image, **kwargs)
-    elapsed_ms = round((time.perf_counter() - start) * 1000)
-
-    # Save to disk
+    compressed_image, pure_size = compressor.compress(image, **kwargs)
+    
+    # Save as PNG
     filepath = save_compressed(session_id, compressor.algorithm_name, compressed_image)
     compressed_size = get_file_size(filepath)
-    extension = "jpg" if compressor.algorithm_name == "jpeg_quality" else "png"
+
+    elapsed_ms = round((time.perf_counter() - start) * 1000)
+    extension = "png"
 
     return {
         "algorithm": compressor.algorithm_name,
         "label": compressor.label,
         "size_bytes": compressed_size,
         "size_human": format_bytes(compressed_size),
+        "pure_size_bytes": pure_size,
+        "pure_size_human": format_bytes(pure_size),
         "width": compressed_image.size[0],
         "height": compressed_image.size[1],
         "duration_ms": elapsed_ms,
@@ -50,6 +53,7 @@ def run_all_compressions(
     session_id: str,
     original_size_bytes: int,
     scale_factor: float = 0.5,
+    jpeg_quality: int = 30,
     svd_rank: int = 50,
 ) -> list[dict]:
     """
@@ -70,9 +74,9 @@ def run_all_compressions(
         image = image.convert("RGB")
 
     tasks = [
-    (_nn_compressor, {"scale_factor": scale_factor}),
-    (_jpeg_compressor, {}),
-    (_svd_compressor, {"rank": svd_rank}),
+        (_nn_compressor, {"scale_factor": scale_factor}),
+        (_jpeg_compressor, {"quality": jpeg_quality}),
+        (_svd_compressor, {"rank": svd_rank}),
     ]
 
     results = []
@@ -85,15 +89,19 @@ def run_all_compressions(
                 compressor,
                 image.copy(),  # Each thread gets its own copy
                 session_id,
+                original_size_bytes,
                 **kwargs,
             )
             futures.append(future)
 
         for future in futures:
             result = future.result()
-            # Add reduction percentage
+            # Add reduction percentages
             result["reduction_percent"] = format_percentage(
                 original_size_bytes, result["size_bytes"]
+            )
+            result["pure_reduction_percent"] = format_percentage(
+                original_size_bytes, result["pure_size_bytes"]
             )
             results.append(result)
 

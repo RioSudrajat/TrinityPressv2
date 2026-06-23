@@ -16,9 +16,12 @@ from PIL import Image
 from config import (
     MAX_FILE_SIZE,
     DEFAULT_SCALE_FACTOR,
+    DEFAULT_JPEG_QUALITY,
     DEFAULT_SVD_RANK,
     SCALE_FACTOR_MIN,
     SCALE_FACTOR_MAX,
+    JPEG_QUALITY_MIN,
+    JPEG_QUALITY_MAX,
     SVD_RANK_MIN,
     SVD_RANK_MAX,
     UPLOAD_FOLDER,
@@ -33,6 +36,7 @@ from services.file_service import (
     get_file_size,
     create_zip,
     start_cleanup_scheduler,
+    get_session_path,
 )
 from services.compression_service import run_all_compressions
 
@@ -110,6 +114,12 @@ def create_app() -> Flask:
             scale_factor = DEFAULT_SCALE_FACTOR
 
         try:
+            jpeg_quality = int(request.form.get("jpeg_quality", DEFAULT_JPEG_QUALITY))
+            jpeg_quality = max(JPEG_QUALITY_MIN, min(JPEG_QUALITY_MAX, jpeg_quality))
+        except (ValueError, TypeError):
+            jpeg_quality = DEFAULT_JPEG_QUALITY
+
+        try:
             svd_rank = int(request.form.get("svd_rank", DEFAULT_SVD_RANK))
             svd_rank = max(SVD_RANK_MIN, min(SVD_RANK_MAX, svd_rank))
         except (ValueError, TypeError):
@@ -129,7 +139,7 @@ def create_app() -> Flask:
         session_id = create_session()
         original_filename = file.filename or "image.png"
 
-        original_path = save_original(session_id, image, original_filename)
+        original_path = save_original(session_id, file_data, original_filename)
         original_size = file_size
 
         # --- Run all compressions in parallel ---
@@ -139,6 +149,7 @@ def create_app() -> Flask:
                 session_id=session_id,
                 original_size_bytes=original_size,
                 scale_factor=scale_factor,
+                jpeg_quality=jpeg_quality,
                 svd_rank=svd_rank,
             )
         except Exception as e:
@@ -147,10 +158,14 @@ def create_app() -> Flask:
                 "message": f"Gagal memproses kompresi: {str(e)}",
             }), 500
 
-        # --- Update SVD label to include rank ---
+        # --- Update labels to include parameters ---
         for r in results:
             if r["algorithm"] == "svd":
                 r["label"] = f"SVD (rank={svd_rank})"
+            elif r["algorithm"] == "jpeg_quality":
+                r["label"] = f"JPEG Quality (Q={jpeg_quality})"
+
+        original_basename = os.path.basename(original_path)
 
         # --- Build response ---
         response = {
@@ -161,7 +176,7 @@ def create_app() -> Flask:
                 "size_human": format_bytes(original_size),
                 "width": image.size[0],
                 "height": image.size[1],
-                "url": f"/api/download/{session_id}/original.png",
+                "url": f"/api/download/{session_id}/{original_basename}",
             },
             "results": results,
         }
@@ -182,9 +197,18 @@ def create_app() -> Flask:
                 "message": "Session atau file tidak ditemukan.",
             }), 404
 
+        if filename.lower().endswith((".jpg", ".jpeg")):
+            mimetype = "image/jpeg"
+        elif filename.lower().endswith(".webp"):
+            mimetype = "image/webp"
+        elif filename.lower().endswith(".bmp"):
+            mimetype = "image/bmp"
+        else:
+            mimetype = "image/png"
+
         return send_file(
             filepath,
-            mimetype="image/png",
+            mimetype=mimetype,
             as_attachment=True,
             download_name=filename,
         )
@@ -192,9 +216,8 @@ def create_app() -> Flask:
     def download_all_zip(session_id):
         """Generate and serve a ZIP of all compressed files."""
         try:
-            # Try to get the original filename from the session
-            original_path = get_file_path(session_id, "original.png")
-            if original_path is None:
+            session_path = get_session_path(session_id)
+            if session_path is None:
                 return jsonify({
                     "error": "not_found",
                     "message": "Session tidak ditemukan.",

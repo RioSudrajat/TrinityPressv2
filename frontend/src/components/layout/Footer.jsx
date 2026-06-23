@@ -12,7 +12,7 @@ export default function Footer() {
             <span className="h-1.5 w-1.5 rounded-full bg-accentPrimary" /> Nearest-Neighbor
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-accentSecondary" /> Chroma Subsampling
+            <span className="h-1.5 w-1.5 rounded-full bg-accentSecondary" /> JPEG Quality
           </span>
           <span className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-accentTertiary" /> SVD

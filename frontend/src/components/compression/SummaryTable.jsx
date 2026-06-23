@@ -5,9 +5,9 @@ import { Table, Zap, ShieldCheck } from "lucide-react";
 export default function SummaryTable({ results }) {
   if (!results || results.length === 0) return null;
 
-  // Find the highest compression (maximum reduction percent)
+  // Find the highest compression (maximum pure reduction percent)
   const bestResult = results.reduce((prev, current) => {
-    return (current.reduction_percent > prev.reduction_percent) ? current : prev;
+    return (current.pure_reduction_percent > prev.pure_reduction_percent) ? current : prev;
   }, results[0]);
 
   return (
@@ -24,8 +24,10 @@ export default function SummaryTable({ results }) {
           <thead>
             <tr className="border-b border-borderHalus/60 text-xs font-mono text-textSec uppercase">
               <th className="py-3 px-4">Algoritma</th>
-              <th className="py-3 px-4">Ukuran File</th>
-              <th className="py-3 px-4">Pengurangan</th>
+              <th className="py-3 px-4">Ukuran (Murni)</th>
+              <th className="py-3 px-4">Reduksi (Murni)</th>
+              <th className="py-3 px-4">Ukuran (PNG)</th>
+              <th className="py-3 px-4">Reduksi (PNG)</th>
               <th className="py-3 px-4">Kecepatan</th>
               <th className="py-3 px-4 text-right">Rekomendasi</th>
             </tr>
@@ -38,7 +40,7 @@ export default function SummaryTable({ results }) {
               let borderClass = "border-l-4 border-l-accentPrimary";
               let textAccent = "text-accentPrimary";
               
-              if (row.algorithm === "chroma_subsampling") {
+              if (row.algorithm === "jpeg_quality") {
                 borderClass = "border-l-4 border-l-accentSecondary";
                 textAccent = "text-accentSecondary";
               } else if (row.algorithm === "svd") {
@@ -58,6 +60,14 @@ export default function SummaryTable({ results }) {
                   <td className={`py-4 px-4 font-display text-textMain ${borderClass}`}>
                     {row.label}
                   </td>
+                  {/* Pure size & reduction */}
+                  <td className="py-4 px-4 font-mono text-textMain">
+                    {formatBytes(row.pure_size_bytes)}
+                  </td>
+                  <td className={`py-4 px-4 font-mono ${row.pure_reduction_percent > 0 ? "text-accentTertiary" : "text-error"}`}>
+                    {formatPercentage(row.pure_reduction_percent)}
+                  </td>
+                  {/* PNG size & reduction */}
                   <td className="py-4 px-4 font-mono text-textMain">
                     {formatBytes(row.size_bytes)}
                   </td>

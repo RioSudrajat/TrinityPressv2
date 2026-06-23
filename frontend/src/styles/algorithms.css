@@ -1,9 +1,9 @@
 /* Algorithm-specific Styling & Signature Colors */
 
 :root {
-  --color-nn: #5B8CFF;
-  --color-chroma: #A78BFA;
-  --color-svd: #34D399;
+  --color-nn: #2563EB;
+  --color-jpeg: #7C3AED;
+  --color-svd: #059669;
 }
 
 /* Card Strip Accent Classes */
@@ -11,8 +11,8 @@
   border-left: 8px solid var(--color-nn);
 }
 
-.accent-strip-chroma {
-  border-left: 8px solid var(--color-chroma);
+.accent-strip-jpeg {
+  border-left: 8px solid var(--color-jpeg);
 }
 
 .accent-strip-svd {
@@ -24,8 +24,8 @@
   color: var(--color-nn);
 }
 
-.text-chroma {
-  color: var(--color-chroma);
+.text-jpeg {
+  color: var(--color-jpeg);
 }
 
 .text-svd {
@@ -37,8 +37,8 @@
   background-color: var(--color-nn);
 }
 
-.bg-chroma {
-  background-color: var(--color-chroma);
+.bg-jpeg {
+  background-color: var(--color-jpeg);
 }
 
 .bg-svd {
@@ -47,13 +47,13 @@
 
 /* Border glows */
 .border-nn {
-  border-color: rgba(91, 140, 255, 0.4);
+  border-color: rgba(37, 99, 235, 0.4);
 }
 
-.border-chroma {
-  border-color: rgba(167, 139, 250, 0.4);
+.border-jpeg {
+  border-color: rgba(124, 58, 237, 0.4);
 }
 
 .border-svd {
-  border-color: rgba(52, 211, 153, 0.4);
+  border-color: rgba(5, 150, 105, 0.4);
 }

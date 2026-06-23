@@ -49,9 +49,11 @@ export default function ResultGrid({
               algorithm={result.algorithm}
               label={result.label}
               size={result.size_bytes}
+              pureSize={result.pure_size_bytes}
               width={result.width}
               height={result.height}
               reductionPercent={result.reduction_percent}
+              pureReductionPercent={result.pure_reduction_percent}
               durationMs={result.duration_ms}
               imageUrl={resolveUrl(result.url)}
               onZoom={() => onZoom(result.algorithm, result.label, result.url)}

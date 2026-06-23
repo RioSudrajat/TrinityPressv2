@@ -26,6 +26,8 @@ export default function Lightbox({
   let activeLabel = "Original Image";
   let activeSize = original.size_bytes;
   let activeReduction = 0;
+  let activePureSize = null;
+  let activePureReduction = 0;
   let tabColor = "border-b-2 border-accentPrimary text-accentPrimary";
 
   if (activeTab !== "original") {
@@ -35,10 +37,12 @@ export default function Lightbox({
       activeLabel = res.label;
       activeSize = res.size_bytes;
       activeReduction = res.reduction_percent;
+      activePureSize = res.pure_size_bytes;
+      activePureReduction = res.pure_reduction_percent;
       
       if (activeTab === "nearest_neighbor") {
         tabColor = "border-b-2 border-accentPrimary text-accentPrimary";
-      } else if (activeTab === "chroma_subsampling") {
+      } else if (activeTab === "jpeg_quality") {
         tabColor = "border-b-2 border-accentSecondary text-accentSecondary";
       } else if (activeTab === "svd") {
         tabColor = "border-b-2 border-accentTertiary text-accentTertiary";
@@ -61,9 +65,17 @@ export default function Lightbox({
             Perbandingan Visual — <span className="text-textSec font-normal">{original.filename}</span>
           </h4>
           <p className="text-xs text-textLabel font-mono mt-0.5">
-            Aktif: <span className="text-textMain font-semibold">{activeLabel}</span> ·{" "}
-            {formatBytes(activeSize)}
-            {activeReduction !== 0 && ` (${formatPercentage(activeReduction)})`}
+            Aktif: <span className="text-textMain font-semibold">{activeLabel}</span>
+            {activeTab !== "original" ? (
+              <>
+                {" "}· Murni: <span className="text-textMain font-semibold">{formatBytes(activePureSize)}</span> ({formatPercentage(activePureReduction)})
+                {" "}· PNG: <span className="text-textMain font-semibold">{formatBytes(activeSize)}</span> ({formatPercentage(activeReduction)})
+              </>
+            ) : (
+              <>
+                {" "}· {formatBytes(activeSize)}
+              </>
+            )}
           </p>
         </div>
 
@@ -98,6 +110,7 @@ export default function Lightbox({
             alt={activeLabel}
             className="max-h-[70vh] max-w-full object-contain rounded select-none cursor-move shadow-2xl"
             onDoubleClick={toggleZoom}
+            style={activeTab === "nearest_neighbor" ? { imageRendering: "pixelated" } : {}}
           />
         </div>
       </div>
@@ -131,17 +144,17 @@ export default function Lightbox({
             </button>
           )}
 
-          {/* Chroma Tab */}
-          {results.some(r => r.algorithm === "chroma_subsampling") && (
+          {/* JPEG Tab */}
+          {results.some(r => r.algorithm === "jpeg_quality") && (
             <button
-              onClick={() => { setActiveTab("chroma_subsampling"); setZoomLevel(1); }}
+              onClick={() => { setActiveTab("jpeg_quality"); setZoomLevel(1); }}
               className={`px-4 py-2 rounded text-xs font-semibold tracking-wider uppercase transition-all ${
-                activeTab === "chroma_subsampling"
+                activeTab === "jpeg_quality"
                   ? "bg-accentSecondary/20 text-accentSecondary border border-accentSecondary/40 shadow-md"
                   : "text-textSec hover:text-textMain hover:bg-surface/30"
               }`}
             >
-              Chroma Sub
+              JPEG Quality
             </button>
           )}
 

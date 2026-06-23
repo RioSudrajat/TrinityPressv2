@@ -21,16 +21,16 @@ class BaseCompressor(ABC):
         pass
 
     @abstractmethod
-    def compress(self, image: Image.Image, **kwargs) -> Image.Image:
+    def compress(self, image: Image.Image, **kwargs) -> tuple[Image.Image, int]:
         """
-        Compress the given PIL Image and return a new PIL Image.
+        Compress the given PIL Image and return a tuple of (Compressed PIL Image, pure_size_bytes).
         
         Args:
             image: Input PIL Image in RGB mode.
             **kwargs: Algorithm-specific parameters.
             
         Returns:
-            Compressed PIL Image in RGB mode.
+            Tuple of (Compressed PIL Image in RGB mode, pure_size_bytes).
         """
         pass
 

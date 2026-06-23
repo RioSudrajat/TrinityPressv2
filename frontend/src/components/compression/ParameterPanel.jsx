@@ -3,8 +3,10 @@ import { Sliders, RotateCcw, Info } from "lucide-react";
 
 export default function ParameterPanel({
   scaleFactor,
+  jpegQuality = 30,
   svdRank,
   onChangeScale,
+  onChangeQuality,
   onChangeRank,
   onReset,
   isProcessing,
@@ -21,14 +23,14 @@ export default function ParameterPanel({
         <button
           onClick={onReset}
           disabled={isProcessing}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surfaceElevated hover:bg-borderHalus text-xs font-semibold text-textSec hover:text-white transition-all disabled:opacity-50 border border-borderHalus/60"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-surfaceElevated hover:bg-borderHalus text-xs font-semibold text-textSec transition-all disabled:opacity-50 border border-borderHalus/60"
         >
           <RotateCcw size={12} />
           <span>Reset ke Default</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Nearest-Neighbor Scale Factor Slider */}
         <div className="space-y-3 p-4 rounded-lg bg-surface/30 border border-borderHalus/30 relative">
           <div className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded border border-accentPrimary/30 bg-accentPrimary/10 text-accentPrimary">
@@ -55,6 +57,36 @@ export default function ParameterPanel({
             />
             <span className="font-mono text-sm bg-background border border-borderHalus px-2.5 py-1 rounded text-accentPrimary font-bold w-14 text-center">
               {scaleFactor.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        {/* JPEG Quality Slider */}
+        <div className="space-y-3 p-4 rounded-lg bg-surface/30 border border-borderHalus/30 relative">
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded border border-accentSecondary/30 bg-accentSecondary/10 text-accentSecondary">
+            JPEG Quality
+          </div>
+          
+          <label className="block text-sm font-semibold text-textMain">
+            JPEG Quality (Q)
+          </label>
+          <p className="text-xs text-textSec">
+            Mengatur kualitas kompresi JPEG. Nilai lebih rendah = kompresi lebih tinggi dan muncul artefak blok (blocking).
+          </p>
+
+          <div className="flex items-center gap-4 pt-2">
+            <input
+              type="range"
+              min="1"
+              max="100"
+              step="1"
+              value={jpegQuality}
+              disabled={isProcessing}
+              onChange={(e) => onChangeQuality(parseInt(e.target.value, 10))}
+              className="flex-grow accent-accentSecondary h-1.5 bg-background rounded-lg appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <span className="font-mono text-sm bg-background border border-borderHalus px-2.5 py-1 rounded text-accentSecondary font-bold w-14 text-center">
+              {jpegQuality}
             </span>
           </div>
         </div>

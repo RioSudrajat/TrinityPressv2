@@ -29,10 +29,11 @@ export async function checkBackendHealth() {
  * @param {function} onUploadProgress - Callback for upload progress tracking
  * @returns {Promise<any>}
  */
-export async function compressImage(file, scaleFactor = 0.5, svdRank = 50, onUploadProgress) {
+export async function compressImage(file, scaleFactor = 0.5, jpegQuality = 30, svdRank = 50, onUploadProgress) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("scale_factor", scaleFactor);
+  formData.append("jpeg_quality", jpegQuality);
   formData.append("svd_rank", svdRank);
 
   try {
